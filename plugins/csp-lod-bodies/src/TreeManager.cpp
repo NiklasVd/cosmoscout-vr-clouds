@@ -312,8 +312,6 @@ void TreeManager::merge() {
   int unmerged = 0;
 
   for (auto& node : mergeNodes) {
-    assert(node != nullptr);
-
     if (insertNode(&mTree, node)) {
       onNodeInserted(node);
       ++merged;
