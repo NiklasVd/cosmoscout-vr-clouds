@@ -8,9 +8,6 @@
 #include "Settings.hpp"
 
 #include "../cs-utils/convert.hpp"
-#include "../cs-utils/filesystem.hpp"
-#include "SolarSystem.hpp"
-#include "logger.hpp"
 
 #include <fstream>
 
@@ -45,7 +42,7 @@ void from_json(nlohmann::json const&                                            
     cs::scene::CelestialObject object;
 
     // First, we parse the required parameters.
-    std::string                         center, frame;
+    std::string                center, frame;
     std::pair<std::string, std::string> existence;
     cs::core::Settings::deserialize(data, "center", center);
     cs::core::Settings::deserialize(data, "frame", frame);

@@ -131,7 +131,7 @@ bool loadImpl(TileSourceWebMapService* source, BaseTileData* tile, TileId const&
       // This is also not critical. Something went wrong - we will just remove the cache file and
       // will try to download it later again if it's requested once more.
       logger().debug("Tile loading failed: Removing invalid cache file '{}'.", *cacheFile);
-      boost::filesystem::remove(*cacheFile);
+      std::filesystem::remove(*cacheFile);
       return false;
     }
 
@@ -369,8 +369,8 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
   auto cacheFilePath(std::filesystem::path(cacheFile.str()));
 
   // The file is already there, we can return it.
-  if (boost::filesystem::exists(cacheFilePath) &&
-      boost::filesystem::file_size(cacheFile.str()) > 0) {
+  if (std::filesystem::exists(cacheFilePath) &&
+      std::filesystem::file_size(cacheFile.str()) > 0) {
     return cacheFile.str();
   }
 
@@ -447,22 +447,11 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
     throw std::runtime_error(sstr.str());
   }
 
-  // The file is there but obviously corrupt. Remove it.
-  if (boost::filesystem::exists(cacheFilePath) &&
-      boost::filesystem::file_size(cacheFile.str()) < 2000) {
-    boost::filesystem::remove(cacheFilePath);
-    if (format == "pngRGB") {
-      logger().debug("Tile (Level: {}, x: {}, y: {}):", tileId.level(), x, y);
-      logger().debug(url.str());
-    }
-    return std::nullopt;
-  }
-
-  boost::filesystem::perms filePerms =
-      boost::filesystem::perms::owner_read | boost::filesystem::perms::owner_write |
-      boost::filesystem::perms::group_read | boost::filesystem::perms::group_write |
-      boost::filesystem::perms::others_read | boost::filesystem::perms::others_write;
-  boost::filesystem::permissions(cacheFilePath, filePerms);
+  std::filesystem::perms filePerms =
+      std::filesystem::perms::owner_read | std::filesystem::perms::owner_write |
+      std::filesystem::perms::group_read | std::filesystem::perms::group_write |
+      std::filesystem::perms::others_read | std::filesystem::perms::others_write;
+  std::filesystem::permissions(cacheFilePath, filePerms);
 
   return cacheFile.str();
 }
