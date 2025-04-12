@@ -265,7 +265,7 @@ TileSourceWebMapService::TileSourceWebMapService(uint32_t resolution)
     return loadImpl<glm::u8vec4>(this, tileId);
   }
 
-  throw std::domain_error(fmt::format("Unsupported format: {}!", static_cast<int>(mFormat)));
+  throw std::domain_error(std::format("Unsupported format: {}!", static_cast<int>(mFormat)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -369,8 +369,7 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
   auto cacheFilePath(std::filesystem::path(cacheFile.str()));
 
   // The file is already there, we can return it.
-  if (std::filesystem::exists(cacheFilePath) &&
-      std::filesystem::file_size(cacheFile.str()) > 0) {
+  if (std::filesystem::exists(cacheFilePath) && std::filesystem::file_size(cacheFile.str()) > 0) {
     return cacheFile.str();
   }
 
