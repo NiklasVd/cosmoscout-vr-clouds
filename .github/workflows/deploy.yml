@@ -46,6 +46,7 @@ jobs:
         sudo apt-get update -q
         sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev libx11-dev
         sudo apt-get install libxi-dev libgconf-2-4
+        sudo apt-get install
     - name: Build Externals
       run: ./make_externals.sh -G "Unix Makefiles"
     - name: Build CosmoScout VR
@@ -68,9 +69,7 @@ jobs:
 
   release_windows:
     name: Windows
-    runs-on: windows-2025
-    env:
-      BOOST_ROOT_1_72_0: C:\hostedtoolcache\windows\Boost\1.72.0\x86_64
+    runs-on: windows-2019
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
