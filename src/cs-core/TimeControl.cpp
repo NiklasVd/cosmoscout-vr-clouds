@@ -35,8 +35,7 @@ TimeControl::TimeControl(std::shared_ptr<core::Settings> settings)
 
   mSettings->onLoad().connect([this]() {
     if (mSettings->mStartDate == "today") {
-      setTime(
-          utils::convert::time::toSpice(boost::posix_time::microsec_clock::universal_time()), 5.0);
+      setTime(utils::convert::time::toSpice(std::chrono::utc_clock::now()), 5.0);
     } else {
       try {
         setTime(utils::convert::time::toSpice(mSettings->mStartDate), 5.0);
@@ -111,7 +110,11 @@ void TimeControl::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void TimeControl::setTime(double tTime, double duration, double threshold) {
+<<<<<<< HEAD
   double now = utils::convert::time::toSpice(boost::posix_time::microsec_clock::universal_time());
+=======
+  double now        = utils::convert::time::toSpice(std::chrono::utc_clock::now());
+>>>>>>> aa77f66d (:sparkles: Apply clang-format.)
   double difference = std::abs(pSimulationTime.get() - tTime);
 
   if (tTime >= pMaxDate || tTime <= pMinDate) {
@@ -139,8 +142,12 @@ void TimeControl::setTime(double tTime, double duration, double threshold) {
 void TimeControl::resetTime(double duration, double threshold) {
 
   if (mSettings->mResetDate == "today") {
+<<<<<<< HEAD
     setTime(utils::convert::time::toSpice(boost::posix_time::microsec_clock::universal_time()),
         duration, threshold);
+=======
+    setTime(utils::convert::time::toSpice(std::chrono::utc_clock::now()), duration, threshold);
+>>>>>>> aa77f66d (:sparkles: Apply clang-format.)
   } else {
     try {
       setTime(utils::convert::time::toSpice(mSettings->mResetDate), duration, threshold);
