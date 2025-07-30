@@ -349,7 +349,8 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
   auto cacheFilePath(std::filesystem::path(cacheFile.str()));
 
   // The file is already there, we can return it.
-  if (std::filesystem::exists(cacheFilePath) && std::filesystem::file_size(cacheFile.str()) > 0) {
+  if (boost::filesystem::exists(cacheFilePath) &&
+      boost::filesystem::file_size(cacheFile.str()) > 2000) {
     return cacheFile.str();
   }
 
@@ -412,11 +413,30 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
     throw std::runtime_error(sstr.str());
   }
 
+<<<<<<< HEAD
   std::filesystem::perms filePerms =
       std::filesystem::perms::owner_read | std::filesystem::perms::owner_write |
       std::filesystem::perms::group_read | std::filesystem::perms::group_write |
       std::filesystem::perms::others_read | std::filesystem::perms::others_write;
   std::filesystem::permissions(cacheFilePath, filePerms);
+=======
+  // The file is there but obviously corrupt. Remove it.
+  if (boost::filesystem::exists(cacheFilePath) &&
+      boost::filesystem::file_size(cacheFile.str()) < 2000) {
+    boost::filesystem::remove(cacheFilePath);
+    if (format == "pngRGB") {
+      logger().debug("Tile (Level: {}, x: {}, y: {}):", tileId.level(), x, y);
+      logger().debug(url.str());
+    }
+    return std::nullopt;
+  }
+
+  boost::filesystem::perms filePerms =
+      boost::filesystem::perms::owner_read | boost::filesystem::perms::owner_write |
+      boost::filesystem::perms::group_read | boost::filesystem::perms::group_write |
+      boost::filesystem::perms::others_read | boost::filesystem::perms::others_write;
+  boost::filesystem::permissions(cacheFilePath, filePerms);
+>>>>>>> ef2129f8 (:wrench: LoD-Bodies don't save tiles that are smaller than 2 kb.)
 
   return cacheFile.str();
 }
