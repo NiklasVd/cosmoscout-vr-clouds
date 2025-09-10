@@ -31,10 +31,9 @@
       CosmoScout.gui.initSlider("atmosphere.setCloudTypeMax", 0, 1, .01, [1]);
       CosmoScout.gui.initSlider("atmosphere.setCloudDensityMultiplier", .1, 10, .1, [1]);
       CosmoScout.gui.initSlider("atmosphere.setCloudAbsorption", 0, 1, .01, [0]);
-      CosmoScout.gui.initSlider("atmosphere.setCloudCoverageExponent", .1, 5, .1, [1]);
       CosmoScout.gui.initSlider("atmosphere.setCloudCutoff", 0, 1, .01, [.1]);
-      CosmoScout.gui.initSlider("atmosphere.setCloudLFRepetitionScale", 100, 50000, 10, [5000]);
-      CosmoScout.gui.initSlider("atmosphere.setCloudHFRepetitionScale", 100, 20000, 10, [768]);
+      CosmoScout.gui.initSlider("atmosphere.setCloudLFRepetitionScale", 100, 12000, 10, [7860]);
+      CosmoScout.gui.initSlider("atmosphere.setCloudHFRepetitionScale", 100, 20000, 10, [690]);
     }
   }
 
