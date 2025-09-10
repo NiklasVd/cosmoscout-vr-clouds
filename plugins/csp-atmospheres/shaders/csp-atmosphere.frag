@@ -416,7 +416,7 @@ float LF_END_DISTANCE = 2000000;
 
 // parameter for converting cloud density in [0, 1] to density along path in 1/meter
 // Source: I made it up
-float BASE_DENSITY = 2e-3;
+float BASE_DENSITY = 5e-3;
 uniform float uCloudDensityMultiplier = 1;
 // how much light gets absorbed relative to being scattered
 uniform float uCloudAbsorption = 0.;
