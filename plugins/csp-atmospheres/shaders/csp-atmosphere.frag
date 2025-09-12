@@ -460,8 +460,8 @@ vec4 GetLocalCloudType(vec2 texCoords){
   vec4 cloudSample = textureLod(uCloudTexture, texCoords, 0);
   float worleyNoise = worleySample.b * 2 - 1;
   float perlinNoise = perlinSample.g * 2 - 1;
-  float cloudType = clamp(1 * cloudSample.r + .2 * worleyNoise + .2 * perlinNoise, 0, 1);
-  return vec4(remap(pow(cloudType, CLOUD_TYPE_EXPONENT), CLOUD_TYPE_RANGE_START, CLOUD_TYPE_RANGE_END, CLOUD_TYPE_MIN, CLOUD_TYPE_MAX), perlinSample);
+  float cloudType = clamp(1 * cloudSample.r, 0, 1);
+  return vec4(clamp(remap(pow(cloudType, CLOUD_TYPE_EXPONENT), CLOUD_TYPE_RANGE_START, CLOUD_TYPE_RANGE_END, CLOUD_TYPE_MIN, CLOUD_TYPE_MAX) + .1 * worleyNoise + .1 * perlinNoise, 0, 1), perlinSample);
 }
 
 // get the low-fidelity cloud prior like in the Nubis cloud system
@@ -813,6 +813,7 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
     // terminate ray early when there is almost no transmittance left
     if (path_transmittance.r < .1){
       //return vec4(samples_taken);
+      //return vec4(10000, 0, 0, 0);
       return vec4(inscattering_acc, path_transmittance.r);
     }
     // useful when working on adaptive step sizes to ensure that a step is always taken => fewer crashes during development
@@ -940,6 +941,9 @@ vec4 getCloudColor(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDistan
   vec3 transmittance_int2 = vec3(1);
   vec4 scatter_data1 = raymarchInterval(rayOrigin, rayDir, sunDir, interval1, transmittance_int1);
   //return scatter_data1;
+  if(scatter_data1.r==10000){
+    return scatter_data1;
+  }
   vec4 scatter_data2 = vec4(0,0,0,1);
   if(scatter_data1.a > .0001){
     scatter_data2 = raymarchInterval(rayOrigin, rayDir, sunDir, interval2, transmittance_int2);
