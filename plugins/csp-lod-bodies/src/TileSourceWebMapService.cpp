@@ -413,19 +413,14 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
     throw std::runtime_error(sstr.str());
   }
 
-<<<<<<< HEAD
-  std::filesystem::perms filePerms =
-      std::filesystem::perms::owner_read | std::filesystem::perms::owner_write |
-      std::filesystem::perms::group_read | std::filesystem::perms::group_write |
-      std::filesystem::perms::others_read | std::filesystem::perms::others_write;
-  std::filesystem::permissions(cacheFilePath, filePerms);
-=======
   // The file is there but obviously corrupt. Remove it.
   if (boost::filesystem::exists(cacheFilePath) &&
       boost::filesystem::file_size(cacheFile.str()) < 2000) {
     boost::filesystem::remove(cacheFilePath);
-    logger().debug("Failed to download tile data: File '{}' is too small and thus seems to be invalid.", cacheFile.str());
-    logger().debug(url.str());
+    if (format == "pngRGB") {
+      logger().debug("Tile (Level: {}, x: {}, y: {}):", tileId.level(), x, y);
+      logger().debug(url.str());
+    }
     return std::nullopt;
   }
 
@@ -434,7 +429,6 @@ std::optional<std::string> TileSourceWebMapService::loadData(TileId const& tileI
       boost::filesystem::perms::group_read | boost::filesystem::perms::group_write |
       boost::filesystem::perms::others_read | boost::filesystem::perms::others_write;
   boost::filesystem::permissions(cacheFilePath, filePerms);
->>>>>>> ef2129f8 (:wrench: LoD-Bodies don't save tiles that are smaller than 2 kb.)
 
   return cacheFile.str();
 }
