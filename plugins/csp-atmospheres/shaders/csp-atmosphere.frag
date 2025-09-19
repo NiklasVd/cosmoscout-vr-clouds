@@ -694,6 +694,7 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
   float big_step = 1000 / interval_length;
   float samples_taken_multiplier = 1;
   float samples_taken_growth = 1.005;
+  int num_short_steps = 0;
 
   //===== BEGIN OF RAY MARCHING LOOP ======
   
@@ -710,11 +711,12 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
       float jitter_multiplier = remap(hash33(position).x, 0, 1, 1 - JITTER_INTENSITY * .5, 1 + JITTER_INTENSITY * .5);
       float low_transmittance_multiplier = remap(path_transmittance.r, 1, 0, 1, 5);
       step_size = small_step* jitter_multiplier;
+      num_short_steps += 1;
     }else{
       float vertical_profile_multiplier = remap(last_vertical_profile, 0, uCloudCutoff * .5, 1, .1);
       vertical_profile_multiplier = 1;
       // the min operation forces 25 samples to be spent when looking straight down
-      step_size = min(big_step * vertical_profile_multiplier, .04 * quality_multiplier);
+      step_size = min(big_step * vertical_profile_multiplier, .02 / quality_multiplier);
     }
     step_size = step_size * quality_multiplier * close_up_multiplier * samples_taken_multiplier;
     samples_taken_multiplier *= samples_taken_growth;
@@ -798,11 +800,12 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
 
         // reduce transmittance along the path
         path_transmittance *= vec3(transmittance_along_segment);
-      }else{
+      }else if(num_short_steps > 5){
         //===== NOT INSIDE CLOUD =====
         in_cloud = false;
         encounter_cloud = false;
         in_cloud_counter = 0;
+        num_short_steps = 0;
       }
     }
 
