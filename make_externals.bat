@@ -129,18 +129,18 @@ cmake %CMAKE_FLAGS% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX="%INS
 cmake --build . --config %BUILD_TYPE% --target install --parallel %NUMBER_OF_PROCESSORS% || goto :error
 
 rem c-ares -----------------------------------------------------------------------------------------
-:c-ares
-
-echo.
-echo Building and installing c-ares ...
-echo.
-
-cmake -E make_directory "%BUILD_DIR%/c-ares" && cd "%BUILD_DIR%/c-ares"
-cmake %CMAKE_FLAGS% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCARES_BUILD_TOOLS=OFF^
-      -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%"^
-      "%EXTERNALS_DIR%/c-ares" || goto :error
-
-cmake --build . --config %BUILD_TYPE% --target install --parallel %NUMBER_OF_PROCESSORS% || goto :error
+rem :c-ares
+rem
+rem echo.
+rem echo Building and installing c-ares ...
+rem echo.
+rem
+rem cmake -E make_directory "%BUILD_DIR%/c-ares" && cd "%BUILD_DIR%/c-ares"
+rem cmake %CMAKE_FLAGS% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCARES_BUILD_TOOLS=OFF^
+rem       -DCARES_USE_LIBRESOLV=OFF -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%"^
+rem       "%EXTERNALS_DIR%/c-ares" || goto :error
+rem
+rem cmake --build . --config %BUILD_TYPE% --target install --parallel %NUMBER_OF_PROCESSORS% || goto :error
 
 rem curl -------------------------------------------------------------------------------------------
 :curl
@@ -152,7 +152,7 @@ echo.
 cmake -E make_directory "%BUILD_DIR%/curl" && cd "%BUILD_DIR%/curl"
 cmake %CMAKE_FLAGS% -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%"^
       -DCMAKE_BUILD_TYPE=%BUILD_TYPE%^
-      -DBUILD_TESTING=OFF -DBUILD_CURL_EXE=OFF -DENABLE_ARES=ON^
+      -DBUILD_TESTING=OFF -DBUILD_CURL_EXE=OFF -DENABLE_ARES=OFF^
       -DCARES_INCLUDE_DIR="%INSTALL_DIR%/include"^
       -DCARES_LIBRARY="%INSTALL_DIR%/lib/cares.lib"^
       -DCURL_USE_SCHANNEL=On -DCMAKE_INSTALL_LIBDIR=lib^

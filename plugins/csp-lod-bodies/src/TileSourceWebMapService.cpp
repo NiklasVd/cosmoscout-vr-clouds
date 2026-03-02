@@ -149,7 +149,7 @@ bool loadImpl(TileSourceWebMapService* source, BaseTileData* tile, TileId const&
           "Failed to parse tile data: File '{}' is completely white and most likely corrupt.",
           *cacheFile);
       source->markTileDataAsInvalid(*cacheFile);
-      if (boost::filesystem::remove(*cacheFile) == 0) {
+      if (std::filesystem::remove(*cacheFile) == 0) {
         logger().debug("Failed to remove tile data: File '{}'", *cacheFile);
       }
       return false;
@@ -527,7 +527,7 @@ bool TileSourceWebMapService::isSame(TileSource const* other) const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void TileSourceWebMapService::markTileDataAsInvalid(boost::filesystem::path const& TileDataPath) {
+void TileSourceWebMapService::markTileDataAsInvalid(std::filesystem::path const& TileDataPath) {
   mLastTimeTileFailed[TileDataPath] = std::chrono::system_clock::now();
 }
 
