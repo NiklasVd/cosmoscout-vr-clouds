@@ -128,20 +128,6 @@ cmake %CMAKE_FLAGS% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX="%INS
       "%EXTERNALS_DIR%/SDL_ttf" || goto :error
 cmake --build . --config %BUILD_TYPE% --target install --parallel %NUMBER_OF_PROCESSORS% || goto :error
 
-rem c-ares -----------------------------------------------------------------------------------------
-rem :c-ares
-rem
-rem echo.
-rem echo Building and installing c-ares ...
-rem echo.
-rem
-rem cmake -E make_directory "%BUILD_DIR%/c-ares" && cd "%BUILD_DIR%/c-ares"
-rem cmake %CMAKE_FLAGS% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCARES_BUILD_TOOLS=OFF^
-rem       -DCARES_USE_LIBRESOLV=OFF -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%"^
-rem       "%EXTERNALS_DIR%/c-ares" || goto :error
-rem
-rem cmake --build . --config %BUILD_TYPE% --target install --parallel %NUMBER_OF_PROCESSORS% || goto :error
-
 rem curl -------------------------------------------------------------------------------------------
 :curl
 
