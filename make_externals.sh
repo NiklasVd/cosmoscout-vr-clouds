@@ -113,17 +113,6 @@ cmake "${CMAKE_FLAGS[@]}" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=
       "$EXTERNALS_DIR/SDL_ttf"
 cmake --build . --target install --parallel "$(nproc)"
 
-# c-ares -------------------------------------------------------------------------------------------
-
-echo ""
-echo "Building and installing c-ares ..."
-echo ""
-
-cmake -E make_directory "$BUILD_DIR/c-ares" && cd "$BUILD_DIR/c-ares"
-cmake "${CMAKE_FLAGS[@]}" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
-      -DCMAKE_BUILD_TYPE=$BUILD_TYPE "$EXTERNALS_DIR/c-ares"
-cmake --build . --target install --parallel "$(nproc)"
-
 # curl ---------------------------------------------------------------------------------------------
 
 echo ""
@@ -132,9 +121,7 @@ echo ""
 
 cmake -E make_directory "$BUILD_DIR/curl" && cd "$BUILD_DIR/curl"
 cmake "${CMAKE_FLAGS[@]}" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
-      -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=OFF -DBUILD_CURL_EXE=OFF -DENABLE_ARES=ON \
-      -DCARES_INCLUDE_DIR="$INSTALL_DIR/include" \
-      -DCARES_LIBRARY="$INSTALL_DIR/lib/libcares.so" \
+      -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=OFF -DBUILD_CURL_EXE=OFF -DENABLE_ARES=OFF \
       -DCMAKE_INSTALL_LIBDIR=lib \
       "$EXTERNALS_DIR/curl"
 cmake --build . --target install --parallel "$(nproc)"
