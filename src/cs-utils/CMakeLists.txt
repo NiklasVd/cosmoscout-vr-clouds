@@ -37,7 +37,6 @@ target_link_libraries(cs-utils
     cspice::cspice
     curl::curl
     curlpp::curlpp
-    c-ares::c-ares
     spdlog::spdlog
 )
 
