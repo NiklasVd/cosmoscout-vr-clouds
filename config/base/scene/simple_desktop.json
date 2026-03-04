@@ -783,22 +783,9 @@
           "cloudTypeTexture": "../share/resources/textures/cloudTop.png",
           "topAltitude": 80000,
           "bottomAltitude": -100,
-          "model": "CosmoScoutVR",
+          "model": "Bruneton",
           "modelSettings": {
-            "mieAnisotropy": 0.76,
-            "mieHeight": 1200,
-            "mieScattering": [
-              4.0e-5,
-              4.0e-5,
-              4.0e-5
-            ],
-            "rayleighAnisotropy": 0,
-            "rayleighHeight": 8000,
-            "rayleighScattering": [
-              5.1768e-6,
-              12.2588e-6,
-              30.5964e-6
-            ]
+            "dataDirectory": "../share/resources/atmosphere-data/earth"
           }
         },
         "Mars": {
