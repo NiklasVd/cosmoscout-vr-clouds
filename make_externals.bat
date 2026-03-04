@@ -371,17 +371,18 @@ cmake -E make_directory "%BUILD_DIR%/cef/extracted" && cd "%BUILD_DIR%/cef"
 
 IF NOT EXIST cef.tar.bz2 (
   curl.exe https://cef-builds.spotifycdn.com/cef_binary_135.0.20+ge7de5c3+chromium-135.0.7049.85_windows64_minimal.tar.bz2 --output cef.tar.bz2
+
+  cd "%BUILD_DIR%/cef/extracted"
+
   cmake -E tar xfj ../cef.tar.bz2
+
+  rem We don't want the example applications.
+  cmake -E remove_directory %CEF_DIR%/tests
 ) else (
   echo File 'cef.tar.bz2' already exists, no download required.
 )
 
-cd "%BUILD_DIR%/cef/extracted"
-
-rem We don't want the example applications.
-cmake -E remove_directory %CEF_DIR%/tests
-
-cd ..
+cd "%BUILD_DIR%/cef/
 
 cmake %CMAKE_FLAGS% -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%"^
       -DCMAKE_UNITY_BUILD=%UNITY_BUILD% -DCEF_RUNTIME_LIBRARY_FLAG=/MD -DCEF_DEBUG_INFO_FLAG=""^
