@@ -12,16 +12,16 @@ rem Make sure to run "git submodule update --init" before executing this script!
 rem Default build mode is release, if "set COSMOSCOUT_DEBUG_BUILD=true" is executed before, all    #
 rem dependencies will be built in debug mode.                                                      #
 rem Usage:                                                                                         #
-rem    make_externals.bat [additional CMake flags, defaults to -G "Visual Studio 15 Win64"]        #
+rem    make_externals.bat [additional CMake flags, defaults to -G "Visual Studio 16 2019" -A x64]  #
 rem Examples:                                                                                      #
 rem    make_externals.bat                                                                          #
-rem    make_externals.bat -G "Visual Studio 15 Win64"                                              #
 rem    make_externals.bat -G "Visual Studio 16 2019" -A x64                                        #
+rem    make_externals.bat -G "Visual Studio 17 2022" -A x64                                        #
 rem    make_externals.bat -GNinja -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe            #
 rem ---------------------------------------------------------------------------------------------- #
 
 rem The CMake generator and other flags can be passed as parameters.
-set CMAKE_FLAGS=-G "Visual Studio 15 Win64"
+set CMAKE_FLAGS=-G "Visual Studio 16 2019" -A x64
 IF NOT "%~1"=="" (
   SET CMAKE_FLAGS=%*
 )
@@ -370,13 +370,13 @@ set CEF_DIR=cef_binary_135.0.20+ge7de5c3+chromium-135.0.7049.85_windows64_minima
 cmake -E make_directory "%BUILD_DIR%/cef/extracted" && cd "%BUILD_DIR%/cef"
 
 IF NOT EXIST cef.tar.bz2 (
-  curl.exe https://cef-builds.spotifycdn.com/cef_binary_88.1.6%%2Bg4fe33a1%%2Bchromium-88.0.4324.96_windows64_minimal.tar.bz2 --output cef.tar.bz2
+  curl.exe https://cef-builds.spotifycdn.com/cef_binary_135.0.20+ge7de5c3+chromium-135.0.7049.85_windows64_minimal.tar.bz2 --output cef.tar.bz2
+  cmake -E tar xfj ../cef.tar.bz2
 ) else (
   echo File 'cef.tar.bz2' already exists, no download required.
 )
 
 cd "%BUILD_DIR%/cef/extracted"
-cmake -E tar xfj ../cef.tar.bz2
 
 rem We don't want the example applications.
 cmake -E remove_directory %CEF_DIR%/tests
