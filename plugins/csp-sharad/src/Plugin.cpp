@@ -80,8 +80,11 @@ void Plugin::init() {
     // Then add new ones.
     std::filesystem::path               dir(filePath);
     std::filesystem::directory_iterator end_iter;
+<<<<<<< HEAD
     std::filesystem::path               dir(filePath);
     std::filesystem::directory_iterator end_iter;
+=======
+>>>>>>> refs/remotes/origin/3d_clouds
 
     if (std::filesystem::exists(dir) && std::filesystem::is_directory(dir)) {
       for (std::filesystem::directory_iterator dir_iter(dir); dir_iter != end_iter; ++dir_iter) {
