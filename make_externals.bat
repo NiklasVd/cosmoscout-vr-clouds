@@ -369,7 +369,7 @@ set CEF_DIR=cef_binary_135.0.20+ge7de5c3+chromium-135.0.7049.85_windows64_minima
 
 cmake -E make_directory "%BUILD_DIR%/cef/extracted" && cd "%BUILD_DIR%/cef"
 
-IF NOT EXIST cef.tar.bz2 (
+IF NOT EXIST cef.tar (
   curl.exe https://cef-builds.spotifycdn.com/cef_binary_135.0.20+ge7de5c3+chromium-135.0.7049.85_windows64_minimal.tar.bz2 --output cef.tar.bz2
 
   cd "%BUILD_DIR%/cef/extracted"
