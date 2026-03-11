@@ -506,6 +506,7 @@ vec4 GetVerticalProfile(vec3 position){
 // get the density of clouds at a position in 3d space
 
 // What exactly is calculated here?
+// => Determine extinction of light at a point in a cumulo-nimbus cloud layer to calculate color for raymarching.
 vec2 getCumuloNimbusDensity(vec3 position, vec3 cam_pos, bool high_res = true){
   vec4 cloudConfig = GetVerticalProfile(position);
   float cloudBase = cloudConfig.r;
@@ -1632,6 +1633,7 @@ void main() {
     oColor = mix(oColor, cloudColor.rgb, cloudColor.a);
   }
 #else
+
   // new cloud model. Utilizes proper physically based rendering
   if (!underWater) {
     vec3 transmittance;
