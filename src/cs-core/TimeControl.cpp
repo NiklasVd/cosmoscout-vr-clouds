@@ -109,15 +109,7 @@ void TimeControl::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void TimeControl::setTime(double tTime, double duration, double threshold) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-  double now = utils::convert::time::toSpice(boost::posix_time::microsec_clock::universal_time());
-=======
   double now        = utils::convert::time::toSpice(std::chrono::utc_clock::now());
->>>>>>> aa77f66d (:sparkles: Apply clang-format.)
-=======
-  double now        = utils::convert::time::toSpice(std::chrono::utc_clock::now());
->>>>>>> refs/remotes/origin/3d_clouds
   double difference = std::abs(pSimulationTime.get() - tTime);
 
   if (tTime >= pMaxDate || tTime <= pMinDate) {
@@ -145,16 +137,7 @@ void TimeControl::setTime(double tTime, double duration, double threshold) {
 void TimeControl::resetTime(double duration, double threshold) {
 
   if (mSettings->mResetDate == "today") {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    setTime(utils::convert::time::toSpice(boost::posix_time::microsec_clock::universal_time()),
-        duration, threshold);
-=======
     setTime(utils::convert::time::toSpice(std::chrono::utc_clock::now()), duration, threshold);
->>>>>>> aa77f66d (:sparkles: Apply clang-format.)
-=======
-    setTime(utils::convert::time::toSpice(std::chrono::utc_clock::now()), duration, threshold);
->>>>>>> refs/remotes/origin/3d_clouds
   } else {
     try {
       setTime(utils::convert::time::toSpice(mSettings->mResetDate), duration, threshold);

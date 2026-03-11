@@ -208,9 +208,28 @@ float sRGBtoLinear(float c) {
 // Compute intersections of a ray with a sphere. Two T parameters are returned -- if no intersection
 // is found, the first will be larger than the second. The T parameters can be nagative. In this
 // case, the intersections are behind the origin (in negative ray direction).
+
+// Computes intersection of ray relative to celestial object position, so if ray intersects a sphere centered at the celestial object.
+// Returns: coefficients [t_0, t_1], such that
+//              rayOrigin + t_0 * rayDir = First intersection,
+//              rayOrigin + t_1 * rayDir = Second intersection,
+// thus the difference vector being the raymarch interval inside the cloud. 
 vec2 intersectSphere(vec3 rayOrigin, vec3 rayDir, float radius) {
+  // We want to put a right triangle between sphere centre C (= [0, 0, 0], as all pos. are relative to observed celestial object), ray origin O
+  // and the ray OD (line starting at O in direction of D). Then, we find the coefficient t_0, such that O + t_0 * D intersects the sphere:
+  // Firstly, we find the coefficient t_a, which is the length , such that the position O + t_a * D = L along the ray OD, forms a
+  // right triangle OCL.
+  // Secondly, we calculate the coefficient t_b, which is the length of the right triangle, such that |CL|^2 + t_b^2 = r^2 (Pythagoras),
+  // where r is the radius. Rearranging and taking the square root yields t_b.
+  // => t_0 = t_a - t_b
+  
+  // Good explanation: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection.html
+  // t_a = -b (as C = -O, cause everything is centered around the observed celestial object)
   float b   = dot(rayOrigin, rayDir);
+  // Calculate length of ray from sphere entry to 
   float c   = dot(rayOrigin, rayOrigin) - radius * radius;
+
+  // det = t_b^2
   float det = b * b - c;
 
   if (det < 0.0) {
@@ -376,6 +395,7 @@ vec4 getOceanShade(float d) {
 
 // -------------------------------------------------------------------------------------------------
 
+// Shifts the bounds of a value v
 float remap(float v, float min_old, float max_old, float min_new, float max_new){
   float v_in_0_1 = (v - min_old) / (max_old - min_old);
   return clamp(v_in_0_1 * (max_new - min_new) + min_new, min(min_new, max_new), max(max_new, min_new));
@@ -484,6 +504,8 @@ vec4 GetVerticalProfile(vec3 position){
 }
 
 // get the density of clouds at a position in 3d space
+
+// What exactly is calculated here?
 vec2 getCumuloNimbusDensity(vec3 position, vec3 cam_pos, bool high_res = true){
   vec4 cloudConfig = GetVerticalProfile(position);
   float cloudBase = cloudConfig.r;
@@ -606,6 +628,10 @@ float henyeyGreenstein(vec3 r1, vec3 r2, float g){
 }
 
 // ray marching the transmittance through the cloud field. No adaptive step size used here
+
+// Calculate light intensity at each step along the raymarch through the cloud.
+// raymarchTransmittance(...) = L(raymarch step pos., ray from sun to raymarch step) = Integral over extinction (lost light due to fading)
+// and incoming light from sun and the environment.
 float raymarchTransmittance(vec3 rayOrigin, vec3 rayDir, vec2 interval, vec3 cam_pos, int samples=10, bool jitter=true){
   if(interval.y < 0){
     return 1.;
@@ -618,7 +644,8 @@ float raymarchTransmittance(vec3 rayOrigin, vec3 rayDir, vec2 interval, vec3 cam
   float last_extinction = getCloudDensity(rayOrigin, cam_pos).x * BASE_DENSITY * uCloudDensityMultiplier * (1+uCloudAbsorption);
   vec3 position = rayOrigin;
   for(int i = 1; i <= samples * CLOUD_QUALITY; ++i){
-    float dist_to_cam = length(rayOrigin - cam_pos);
+    // float dist_to_cam = length(rayOrigin - cam_pos);
+    // What is jitter doing?
     float jitter_value = SAMPLE_JITTER && jitter ? (hash33(position).x - .5) * JITTER_INTENSITY : 0;
     // reduce jitter on extremely long paths to avoid transmittance turning into pure noise. Introduces some banding
     jitter_value = remap(interval_length, 0, 500000, jitter_value, 0);
@@ -637,6 +664,8 @@ float raymarchTransmittance(vec3 rayOrigin, vec3 rayDir, vec2 interval, vec3 cam
       float scatter_coefficient = local_density * BASE_DENSITY * uCloudDensityMultiplier;
       float extinction = scatter_coefficient * (1+uCloudAbsorption);
       float clamped_dist = clamp(dist, 0, MAXIMUM_DIST_BETWEEN_SAMPLES);
+
+      // exp(tau(r_i, r_i+1)), r_i, r_i+1 segment start/end along ray from sun to step pos.
       float extinction_along_segment = exp(-(extinction + last_extinction) * .5 * clamped_dist);
       path_transmittance *= extinction_along_segment;
       last_extinction = extinction;
@@ -647,7 +676,15 @@ float raymarchTransmittance(vec3 rayOrigin, vec3 rayDir, vec2 interval, vec3 cam
 
 // The function where all the integration happens
 // uses adaptive step sizes to bring performance to an acceptable level
+
+// PARAMETERS:
+// interval = Coefficients of ray at which
+//      rayOrigin + interval.x * rayDir = 1st intersection,
+//      rayOrigin + interval.y * rayDir = 2nd intersection,
+// with the cloud box.
+// path_transmittance = ?
 vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, out vec3 path_transmittance){
+  // Ray intersects cloud box behind the camera (ignore).
   if(interval.y < 0){
     path_transmittance = vec3(1);
     return vec4(0, 0, 0, 1);
@@ -677,6 +714,8 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
   // Inscattering from the atmosphere is added only when a cloud is encountered to reduce atmo model evaluations
   // DO NOT evaluate the atmosphere model for very short intervals
   float t_cloudfree_start = interval.x;
+
+  // Actual density function: getCumuloNimbusDensity
   vec2 density_struct = getCloudDensity(rayOrigin + rayDir * interval.x, rayOrigin);
   float start_density = density_struct.x;
   bool in_cloud = start_density > 0;
@@ -809,6 +848,8 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
 
         // get transmittance through clouds
         vec2 top_intersection = intersectSphere(position, sunDir, PLANET_RADIUS + CUMULONIMBUS_END_HEIGHT);
+
+        // 10 = min_new, 2 = max_new ?
         int transmittance_samples = int(remap(path_transmittance.r, 0, 1, 10, 2));
         float in_transmittance = SECONDARY_RAYS ? raymarchTransmittance(position, sunDir, vec2(0, top_intersection.y), rayOrigin, transmittance_samples) : 1;
         direct_incoming *= in_transmittance;
@@ -881,9 +922,11 @@ vec4 getCloudColor(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDistan
   float topAltitude = PLANET_RADIUS + CUMULONIMBUS_END_HEIGHT;
   float lowAltitude = PLANET_RADIUS + CUMULONIMBUS_START_HEIGHT;
 
+  // Check where ray intersects top/ bottom cloud layer and atmosphere
   vec2 topIntersections = intersectSphere(rayOrigin, rayDir, topAltitude);
   vec2 lowIntersections = intersectSphere(rayOrigin, rayDir, lowAltitude);
   vec2 atmo_intersections = intersectAtmosphere(rayOrigin, rayDir);
+  // => Returns coefficients t_0, t_1, such that rayOrigin + t_0 * rayDir = first intersection, ...
 
   float originHeight = length(rayOrigin);
   bool hitsSurface = surfaceDistance < atmo_intersections.y || intersectSphere(rayOrigin, rayDir, PLANET_RADIUS).y > 0;
@@ -895,6 +938,7 @@ vec4 getCloudColor(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDistan
   bool above = originHeight > topAltitude;
   bool below = originHeight < lowAltitude;
 
+  // Calculate t-coefficient intervals where the ray travels through the cloud layer
   vec2 interval1 = vec2(0, -1);
   vec2 interval2 = vec2(0, -1);
 
@@ -1020,15 +1064,9 @@ float getCloudDensityDefault(vec3 rayOrigin, vec3 rayDir, float tIntersection){
   vec2 lngLat    = getLngLat(position);
   vec2 texCoords = vec2(lngLat.x / (2 * PI) + 0.5, 1.0 - lngLat.y / PI + 0.5);
   #if ENABLE_HDR
-<<<<<<< HEAD
-    return sRGBtoLinear(texture(uCloudTexture, texCoords).r);
-  #else
-    return texture(uCloudTexture, texCoords).r;
-=======
     return sRGBtoLinear(textureLod(uCloudTexture, texCoords, 0).r);
   #else
     return textureLod(uCloudTexture, texCoords, 0).r;
->>>>>>> refs/remotes/origin/3d_clouds
   #endif
 }
 
@@ -1043,145 +1081,6 @@ float getCloudDensityDefault(vec3 rayOrigin, vec3 rayDir, float tIntersection){
 // future.
 vec4 getCloudColorDefault(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDistance){
 // The distance between the top and bottom cloud layers.
-<<<<<<< HEAD
-  float thickness = uCloudAltitude * 0.5;
-
-  // The distance to the planet surface where the fade-out starts.
-  float fadeWidth = thickness * 2.0;
-
-  // The altitude of the upper-most cloud layer.
-  float topAltitude = PLANET_RADIUS + uCloudAltitude;
-
-  // The number of cloud layers.
-  int samples = 10;
-
-  vec2 intersections = intersectSphere(rayOrigin, rayDir, topAltitude);
-
-  // If we do not intersect the cloud sphere, we can return early.
-  if (intersections.y < 0 || intersections.x > intersections.y) {
-    return vec4(0.0);
-  }
-
-  // If we are below the clouds and the ray intersects the ground, we can also return early.
-  if (intersections.x < 0 && surfaceDistance < intersections.y) {
-    return vec4(0.0);
-  }
-
-  // Compute intersection point of view ray with clouds. Use this to compute the illuminance at this
-  // point as well as the transmittance of the atmosphere towards the observer.
-  vec3 p = rayOrigin + rayDir * (intersections.x < 0 ? intersections.y : intersections.x);
-  vec3 skyIlluminance, transmittance;
-  vec3 inScatter      = GetSkyLuminanceToPoint(rayOrigin, p, uSunDir, transmittance);
-  vec3 sunIlluminance = GetSunAndSkyIlluminance(p, uSunDir, skyIlluminance);
-
-  // We will accumulate the cloud density in this variable.
-  float density = 0.0;
-
-  for (int i = 0; i < samples; ++i) {
-    float altitude      = topAltitude - i * thickness / samples;
-    vec2  intersections = intersectSphere(rayOrigin, rayDir, altitude);
-    float fac           = 1.0;
-
-    // Reduce cloud opacity when end point is very close to planet surface.
-    fac *= clamp(abs(surfaceDistance - intersections.x) / fadeWidth, 0, 1);
-    fac *= clamp(abs(surfaceDistance - intersections.y) / fadeWidth, 0, 1);
-
-    // Reduce cloud opacity when start point is very close to cloud surface.
-    fac *= clamp(abs(intersections.x) / thickness, 0, 1);
-    fac *= clamp(abs(intersections.y) / thickness, 0, 1);
-
-    // If we intersect the cloud sphere...
-    if (intersections.y > 0 && intersections.x < intersections.y) {
-      // Check whether the cloud sphere is intersected from above...
-      if (intersections.x > 0 && intersections.x < surfaceDistance) {
-        // hits from above,
-        vec3 position  = rayOrigin + rayDir * intersections.x;
-        density += getCloudDensity(position) * fac;
-      } else if (intersections.y < surfaceDistance) {
-        // ... or from from below.
-        vec3 position  = rayOrigin + rayDir * intersections.y;
-        density += getCloudDensity(position) * fac;
-      }
-    }
-  }
-
-  // Compute the final color based on the cloud density.
-  return vec4(
-      transmittance * (sunIlluminance + skyIlluminance) / PI + inScatter, density / samples);
-}
-
-vec4 getCloudColorOld(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDistance){
-// The distance between the top and bottom cloud layers.
-  float thickness = uCloudAltitude * 0.5;
-
-  // The distance to the planet surface where the fade-out starts.
-  float fadeWidth = thickness * 2.0;
-
-  // The altitude of the upper-most cloud layer.
-  float topAltitude = PLANET_RADIUS + uCloudAltitude;
-
-  // The number of cloud layers.
-  int samples = 10;
-
-  vec2 intersections = intersectSphere(rayOrigin, rayDir, topAltitude);
-
-  // If we do not intersect the cloud sphere, we can return early.
-  if (intersections.y < 0 || intersections.x > intersections.y) {
-    return vec4(0.0);
-  }
-
-  // If we are below the clouds and the ray intersects the ground, we can also return early.
-  if (intersections.x < 0 && surfaceDistance < intersections.y) {
-    return vec4(0.0);
-  }
-
-  // Compute intersection point of view ray with clouds. Use this to compute the illuminance at this
-  // point as well as the transmittance of the atmosphere towards the observer.
-  vec3 p = rayOrigin + rayDir * (intersections.x < 0 ? intersections.y : intersections.x);
-  vec3 skyIlluminance, transmittance;
-  vec3 inScatter      = GetSkyLuminanceToPoint(rayOrigin, p, uSunDir, transmittance);
-  vec3 sunIlluminance = GetSunAndSkyIlluminance(p, uSunDir, skyIlluminance);
-
-  // We will accumulate the cloud density in this variable.
-  float density = 0.0;
-
-  for (int i = 0; i < samples; ++i) {
-    float altitude      = topAltitude - i * thickness / samples;
-    vec2  intersections = intersectSphere(rayOrigin, rayDir, altitude);
-    float fac           = 1.0;
-
-    // Reduce cloud opacity when end point is very close to planet surface.
-    fac *= clamp(abs(surfaceDistance - intersections.x) / fadeWidth, 0, 1);
-    fac *= clamp(abs(surfaceDistance - intersections.y) / fadeWidth, 0, 1);
-
-    // Reduce cloud opacity when start point is very close to cloud surface.
-    fac *= clamp(abs(intersections.x) / thickness, 0, 1);
-    fac *= clamp(abs(intersections.y) / thickness, 0, 1);
-
-    // If we intersect the cloud sphere...
-    if (intersections.y > 0 && intersections.x < intersections.y) {
-      // Check whether the cloud sphere is intersected from above...
-      if (intersections.x > 0 && intersections.x < surfaceDistance) {
-        // hits from above,
-        vec3 position  = rayOrigin + rayDir * intersections.x;
-        density += getCloudDensity(position) * fac;
-      } else if (intersections.y < surfaceDistance) {
-        // ... or from from below.
-        vec3 position  = rayOrigin + rayDir * intersections.y;
-        density += getCloudDensity(position) * fac;
-      }
-    }
-  }
-
-  // Compute the final color based on the cloud density.
-  return vec4(
-      transmittance * (sunIlluminance + skyIlluminance) / PI + inScatter, density / samples);
-}
-
-vec4 getCloudColorOld(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDistance){
-// The distance between the top and bottom cloud layers.
-=======
->>>>>>> refs/remotes/origin/3d_clouds
   float thickness = uCloudAltitude * 0.5;
 
   // The distance to the planet surface where the fade-out starts.
@@ -1234,17 +1133,10 @@ vec4 getCloudColorOld(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, float surfaceDis
       // Check whether the cloud sphere is intersected from above...
       if (intersections.x > 0 && intersections.x < surfaceDistance) {
         // hits from above,
-<<<<<<< HEAD
-        density += getCloudDensityOld(rayOrigin, rayDir, intersections.x) * fac;
-      } else if (intersections.y < surfaceDistance) {
-        // ... or from from below.
-        density += getCloudDensityOld(rayOrigin, rayDir, intersections.y) * fac;
-=======
         density += getCloudDensityDefault(rayOrigin, rayDir, intersections.x) * fac;
       } else if (intersections.y < surfaceDistance) {
         // ... or from from below.
         density += getCloudDensityDefault(rayOrigin, rayDir, intersections.y) * fac;
->>>>>>> refs/remotes/origin/3d_clouds
       }
     }
   }
@@ -1275,9 +1167,6 @@ float getCloudShadow(vec3 rayOrigin, vec3 rayDir) {
   // Reduce cloud opacity when end point is very close to planet surface.
   float fac = clamp(abs(intersections.y) / fadeWidth, 0, 1);
   vec3 position  = rayOrigin + rayDir * intersections.y;
-<<<<<<< HEAD
-  return 1.0 - getCloudDensity(position) * fac;
-=======
   #if OLD_CLOUDS
   return 1.0 - getCloudDensityDefault(rayOrigin, rayDir, intersections.y) * fac;
   #else
@@ -1292,7 +1181,6 @@ float getCloudShadow(vec3 rayOrigin, vec3 rayDir) {
   //float transmittance = clamp(raymarchingResult.a, .01, 1.); 
   return transmittance;
   #endif
->>>>>>> refs/remotes/origin/3d_clouds
 }
 
 // Returns a precomputed luminance of the atmosphere ring around the occluder for the

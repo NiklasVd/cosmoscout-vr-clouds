@@ -519,7 +519,10 @@ bool Atmosphere::Do() {
     mAtmoShader.SetUniform(mAtmoUniforms.cloudLFRepetitionScale, mSettings.mCloudLFRepetitionScale.get());
     mAtmoShader.SetUniform(mAtmoUniforms.cloudHFRepetitionScale, mSettings.mCloudHFRepetitionScale.get());
     mAtmoShader.SetUniform(mAtmoUniforms.cloudQuality, mSettings.mCloudQuality.get());
+
+    // Samples = Segments along which transmittance is calculated for each raymarch step through a cloud.
     mAtmoShader.SetUniform(mAtmoUniforms.cloudMaxSamples, mSettings.mCloudMaxSamples.get());
+    
     mAtmoShader.SetUniform(mAtmoUniforms.cloudJitter, mSettings.mCloudJitter.get());
     mAtmoShader.SetUniform(mAtmoUniforms.cloudTypeExponent, mSettings.mCloudTypeExponent.get());
     mAtmoShader.SetUniform(mAtmoUniforms.cloudRangeMin, mSettings.mCloudRangeMin.get());
