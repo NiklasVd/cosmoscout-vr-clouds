@@ -54,6 +54,9 @@ class Plugin : public cs::core::PluginBase {
       cs::utils::DefaultProperty<bool>   mEnableLimbLuminance{true};
       std::optional<std::string> mLimbLuminanceTexture; ///< Path to the limb luminance texture.
 
+      // Volumetric clouds
+      cs::utils::DefaultProperty<bool>   mEnableVolumetricClouds{false};
+
       /// If this is set to true, the plugin will save a fish-eye view of the sky to a file one
       /// the preprocessing is done.
       cs::utils::DefaultProperty<bool> mRenderSkydome{false};

@@ -72,6 +72,9 @@ void from_json(nlohmann::json const& j, Plugin::Settings::Atmosphere& o) {
   cs::core::Settings::deserialize(j, "enableLimbLuminance", o.mEnableLimbLuminance);
   cs::core::Settings::deserialize(j, "limbLuminanceTexture", o.mLimbLuminanceTexture);
   cs::core::Settings::deserialize(j, "renderSkydome", o.mRenderSkydome);
+
+  // Volumetric clouds
+  cs::core::Settings::deserialize(j, "enableVolumetricClouds", o.mEnableVolumetricClouds);
 }
 
 void to_json(nlohmann::json& j, Plugin::Settings::Atmosphere const& o) {
@@ -88,6 +91,9 @@ void to_json(nlohmann::json& j, Plugin::Settings::Atmosphere const& o) {
   cs::core::Settings::serialize(j, "enableLimbLuminance", o.mEnableLimbLuminance);
   cs::core::Settings::serialize(j, "limbLuminanceTexture", o.mLimbLuminanceTexture);
   cs::core::Settings::serialize(j, "renderSkydome", o.mRenderSkydome);
+
+  // Volumetric clouds
+  cs::core::Settings::serialize(j, "enableVolumetricClouds", o.mEnableVolumetricClouds);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,6 +139,9 @@ void Plugin::init() {
                 "atmosphere.setEnableClouds", settings.mEnableClouds.get());
             mGuiManager->setSliderValue(
                 "atmosphere.setCloudAltitude", settings.mCloudAltitude.get());
+
+            // Volumetric clouds
+            mGuiManager->setCheckboxValue("atmosphere.setEnableVolumetricClouds", settings.mEnableVolumetricClouds.get());
           }
         }
       });
@@ -195,6 +204,15 @@ void Plugin::init() {
   mGuiManager->getGui()->registerCallback("atmosphere.setEnable",
       "Enables or disables rendering of atmospheres.",
       std::function([this](bool enable) { mPluginSettings->mEnable = enable; }));
+
+  mGuiManager->getGui()->registerCallback("atmosphere.setEnableVolumetricClouds",
+      "Enables or disables rendering of a volumetric cloud layer.", std::function([this](bool enable) {
+        if (!mActiveAtmosphere.empty()) {
+          auto& settings         = mPluginSettings->mAtmospheres.at(mActiveAtmosphere);
+          settings.mEnableVolumetricClouds = enable;
+          mAtmospheres.at(mActiveAtmosphere)->configure(settings);
+        }
+      }));
 
   // Load settings.
   onLoad();
