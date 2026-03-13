@@ -32,10 +32,10 @@ uniform sampler2D uDepthBuffer;
 uniform vec3      uSunDir;
 uniform vec3      uSunInfo; // x: sun luminance, y: sun illuminance, z: sun angular radius
 uniform float     uTime;
-uniform mat4      uMatM;
-uniform mat4      uMatMVP;
+uniform mat4      uMatM; // Model
+uniform mat4      uMatMVP; // Model view projection
 uniform mat4      uMatScale;
-uniform mat4      uMatInvP;
+uniform mat4      uMatInvP; // Inverse projection
 uniform float     uWaterLevel;
 uniform sampler2D uCloudTexture;
 uniform float     uCloudAltitude;

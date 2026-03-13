@@ -382,6 +382,7 @@ void Atmosphere::update(double time) {
     mSunIlluminance = mSolarSystem->getSunIlluminance(object->getObserverRelativePosition());
     mSunLuminance   = mSolarSystem->getSunLuminance();
     mSunDirection   = mSolarSystem->getSunDirection(object->getObserverRelativePosition());
+    // Observer relative transform (pos, rot, scale relative to coordinate frame of observer (camera))
     mObserverRelativeTransformation = object->getObserverRelativeTransform();
     mSceneScale                     = mSolarSystem->getObserver().getScale();
     mEclipseShadowReceiver->update(*object);
@@ -464,7 +465,7 @@ bool Atmosphere::Do() {
   glm::dmat4 matInvWorld = glm::inverse(mObserverRelativeTransformation);
   glm::dmat4 matInvMV    = matInverseEllipsoid * matInvWorld * matInvV;
   glm::mat4  matInvP     = glm::inverse(matP);
-  glm::mat4  matMVP      = glm::mat4(matP * matV * matM);
+  glm::mat4  matMVP      = glm::mat4(matP * matV * matM); // Observer transform => view => project => observer transform on screen
 
   // Reconstructing the frame-buffer depth in the atmosphere shader is a bit involved as a simple
   // multiplication with matInvP would lead to coordinates in observer-relative coordinates which
@@ -587,7 +588,7 @@ bool Atmosphere::Do() {
     mAtmoShader.SetUniform(mAtmoUniforms.noiseTexture2D, 7);
   }
   
-
+  // Set celestial object transforms for cloud calculations in frag shader
   glUniformMatrix4fv(
       mAtmoUniforms.inverseModelViewMatrix, 1, GL_FALSE, glm::value_ptr(glm::mat4(matInvMV)));
   glUniformMatrix4fv(mAtmoUniforms.scaleMatrix, 1, GL_FALSE, glm::value_ptr(glm::mat4(matScale)));

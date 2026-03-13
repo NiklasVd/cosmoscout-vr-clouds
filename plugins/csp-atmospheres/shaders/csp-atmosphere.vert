@@ -8,8 +8,8 @@
 #version 430
 
 // uniforms
-uniform mat4 uMatInvMV;
-uniform mat4 uMatInvP;
+uniform mat4 uMatInvMV; // Inverse model view
+uniform mat4 uMatInvP; // Inverse projection
 
 // outputs
 out VaryingStruct {
