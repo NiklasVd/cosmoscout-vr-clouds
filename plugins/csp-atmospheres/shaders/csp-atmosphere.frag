@@ -489,7 +489,7 @@ uniform float uCloudLFRepetitionScale = 5000;
 uniform float uCloudHFRepetitionScale = 1190;
 
 float MIN_REMAINING_TRANSMITTANCE = 0.01;//0.001;
-uniform int TRANSMITTANCE_INTERPOLATION_STRIDE = 10;
+uniform int TRANSMITTANCE_INTERPOLATION_STRIDE = 20;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -1003,7 +1003,8 @@ vec4 raymarchInterval(vec3 rayOrigin, vec3 rayDir, vec3 sunDir, vec2 interval, o
         float sampledInTransmittance;
 #if INTERPOLATE_TRANSMITTANCE
         // Calculate the next time a transmittance sample is computed.
-        // The counter with which this mod operation is conducted was previously the total samples_taken increment.
+        // Always use in_cloud_counter to calculate transmittance step
+        // Add n steps to stride at every sampling point
         int transmittanceStepMod = in_cloud_counter % TRANSMITTANCE_INTERPOLATION_STRIDE;
         if (transmittanceStepMod == 0) {
           currSampledTransmittance = nextSampledTransmittance;
